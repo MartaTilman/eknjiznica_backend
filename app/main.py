@@ -1,14 +1,13 @@
 from fastapi import FastAPI
-import socket,os
 from app.database import engine, Base
-from app.models import book, user
+from app.routers import auth, books, reading_list
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    hostname = socket.gethostname()
-    port = os.getenv("PORT", "unknown")
-    return {"message": f"Pozdrav s instance: {hostname}, port: {port}"}
-@app.get("/")
-def root():
-    return {"message": "eKnjižnica backend radi"}
+# Include routers
+app.include_router(auth.router)
+app.include_router(books.router)
+app.include_router(reading_list.router)
