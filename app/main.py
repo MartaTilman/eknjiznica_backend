@@ -1,13 +1,17 @@
 from fastapi import FastAPI
 from app.database import engine, Base
-from app.routers import auth, books, reading_list
+from app.routers import auth, books, reviews, ratings, reading_list_user
 
-# Create tables
+
+
+
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Include routers
 app.include_router(auth.router)
 app.include_router(books.router)
-app.include_router(reading_list.router)
+app.include_router(reviews.router)
+app.include_router(ratings.router)
+app.include_router(reading_list_user.router)

@@ -18,7 +18,14 @@ def create_book(title: str, author: str, description: str, owner_id: int, db: Se
     db.add(book)
     db.commit()
     db.refresh(book)
-    return book
+    return {
+        "id": book.id,
+        "title": book.title,
+        "author": book.author,
+        "description": book.description,
+        "owner_id": book.owner_id
+    }
+
 
 @router.get("/")
 def get_books(db: Session = Depends(get_db)):
