@@ -16,12 +16,11 @@ def add_to_wishlist(book_name: str, db: Session = Depends(get_db), current_user=
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    # Provjera postoji li rating za korisnika i tu knjigu
+    
     rating_exists = db.query(Rating).filter_by(user_id=current_user.id, book_id=book.id).first()
     if rating_exists:
         raise HTTPException(status_code=400, detail="Cannot add book to wishlist because it is already rated")
 
-    # Provjera postoji li review za korisnika i tu knjigu
     review_exists = db.query(Review).filter_by(user_id=current_user.id, book_id=book.id).first()
     if review_exists:
         raise HTTPException(status_code=400, detail="Cannot add book to wishlist because it is already reviewed")

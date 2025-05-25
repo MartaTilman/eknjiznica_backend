@@ -12,7 +12,7 @@ def add_rating(score: int, book_id: int, db: Session = Depends(get_db), current_
     db_rating = Rating(score=score, user_id=current_user.id, book_id=book_id)
     db.add(db_rating)
 
-    # Dodavanje u reading list ako nema
+ 
     exists = db.query(ReadingList).filter_by(user_id=current_user.id, book_id=book_id).first()
     if not exists:
         reading_item = ReadingList(user_id=current_user.id, book_id=book_id)
