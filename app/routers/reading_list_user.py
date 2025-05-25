@@ -1,41 +1,52 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.reading_list import ReadingList
 from app.models.book import Book
 from app.models.rating import Rating
+from app.models.review import Review
+from app.models.reading_list import ReadingList
 from app.routers.auth import get_current_user
-from app.models.review import Review 
 
 router = APIRouter(prefix="/reading_list", tags=["reading_list"])
 
 @router.get("/")
-def get_reading_list(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    reading_list_entries = db.query(ReadingList).filter(ReadingList.user_id == current_user.id).all()
-
+def get_full_reading_list(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     result = []
+    added_book_ids = set()
 
-    for entry in reading_list_entries:
-        book = db.query(Book).filter(Book.id == entry.book_id).first()
+    # 1. Knjige s recenzijom
+    reviews = db.query(Review).filter(Review.user_id == current_user.id).all()
+    for review in reviews:
+        book = db.query(Book).filter(Book.id == review.book_id).first()
         if not book:
             continue
-
-        rating = db.query(Rating).filter(
-            Rating.user_id == current_user.id,
-            Rating.book_id == book.id
-        ).first()
-
-        review = db.query(Review).filter(
-            Review.user_id == current_user.id,
-            Review.book_id == book.id
-        ).first()
-
+        rating = db.query(Rating).filter_by(user_id=current_user.id, book_id=book.id).first()
         result.append({
             "book_id": book.id,
             "title": book.title,
             "author": book.author,
             "rating": rating.score if rating else None,
-            "review": review.content if review else None  
+            "review": review.content
         })
+        added_book_ids.add(book.id)
+
+    # 2. Knjige s ocjenom ali bez recenzije
+    ratings = db.query(Rating).filter(Rating.user_id == current_user.id).all()
+    for rating in ratings:
+        if rating.book_id in added_book_ids:
+            continue
+        book = db.query(Book).filter(Book.id == rating.book_id).first()
+        if not book:
+            continue
+        result.append({
+            "book_id": book.id,
+            "title": book.title,
+            "author": book.author,
+            "rating": rating.score,
+            "review": None
+        })
+        added_book_ids.add(book.id)
+
+    
 
     return result
