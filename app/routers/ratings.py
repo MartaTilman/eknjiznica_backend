@@ -43,3 +43,17 @@ def get_my_ratings(db: Session = Depends(get_db), current_user=Depends(get_curre
         }
         for r in ratings
     ]
+@router.put("/{rating_id}")
+def update_rating(rating_id: int, score: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    rating = db.query(Rating).filter(Rating.id == rating_id, Rating.user_id == current_user.id).first()
+    if not rating:
+        raise HTTPException(status_code=404, detail="Rating not found")
+
+    rating.score = score
+    db.commit()
+    db.refresh(rating)
+
+    return {"message": "Rating updated successfully", "rating": {
+        "id": rating.id,
+        "score": rating.score
+    }}

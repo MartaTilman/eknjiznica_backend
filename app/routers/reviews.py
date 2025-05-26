@@ -51,3 +51,18 @@ def get_my_reviews(db: Session = Depends(get_db), current_user: User = Depends(g
         }
         for r in reviews
     ]
+
+@router.put("/{review_id}")
+def update_review(review_id: int, content: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    review = db.query(Review).filter(Review.id == review_id, Review.user_id == current_user.id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    review.content = content
+    db.commit()
+    db.refresh(review)
+
+    return {"message": "Review updated successfully", "review": {
+        "id": review.id,
+        "content": review.content
+    }}
