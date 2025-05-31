@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.database import engine, Base
 from app.routers import auth, books, reviews, ratings, reading_list_user, wish_list
-
+from app import models
 
 
 
