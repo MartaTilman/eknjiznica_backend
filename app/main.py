@@ -16,3 +16,7 @@ app.include_router(reviews.router)
 app.include_router(ratings.router)
 app.include_router(reading_list_user.router)
 app.include_router(wish_list.router)
+
+@app.get("/")
+def read_root():
+    return {"message": "Dobrodošliu eKnjižnicu!"}
